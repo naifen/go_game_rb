@@ -1,4 +1,6 @@
 class Player
+  attr_reader :name, :piece
+
   # Initialize a player with representing name, piece of choice - black or white
   # and inject a game board where the player can put piece on
   # @param [String] name The name of player, eg John Doe
@@ -13,7 +15,7 @@ class Player
 
   # keep asking for user input until a valid coordinates is received and the
   # piece is added to the coordinates
-  def ask_to_add_piece
+  def request_add_piece
     while true
       coordinates = get_player_input
 

@@ -8,6 +8,7 @@ class Board
     @board = Array.new(size) { Array.new(size) }
   end
 
+  # TODO: render correctly for index is 2 digits
   # print the board with colum indicator on top and row indicator to the left
   # if a cell is nil, print "+" char, othewise print the Symbol :B or :W
   def render
@@ -47,5 +48,9 @@ class Board
   def can_add_to?(coordinates)
     # within_valid_coordinates?(coordinates) && is_coordinates_available?(coordinates)
     true
+  end
+
+  def winner_is?(piece)
+    false
   end
 end
