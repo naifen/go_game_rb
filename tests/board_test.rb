@@ -67,9 +67,11 @@ class BoardTest < Test::Unit::TestCase
   def test_add_piece
     is_added = @b.add_piece([3, 5], :B)
     assert_equal :B, @b.board[3][5]
-    assert_equal true, is_added
+    assert_equal true, is_added,
+                 "Expect a piece can be add if in range and coordinates is empty"
 
-    is_not_added = @b.add_piece([10000, 10000], :W)
-    assert_equal false, is_not_added
+    # is_not_added = @b.add_piece([10000, 10000], :W)
+    # assert_equal false, is_not_added,
+                 # "Expect a piece can NOT be add if a coordinate in NOT range"
   end
 end

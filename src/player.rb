@@ -10,4 +10,38 @@ class Player
     @piece = piece
     @board = board
   end
+
+  # keep asking for user input until a valid coordinates is received and the
+  # piece is added to the coordinates
+  def ask_to_add_piece
+    while true
+      coordinates = get_player_input
+
+      if valid_coordinates?(coordinates)
+        if @board.add_piece(coordinates, @piece)
+          break
+        end
+      end
+    end
+  end
+
+  private
+
+    # @return [Array<Integer>] An array of 2 integers representing coordinates
+    # element at index 0 represents row, element at index 1 represents col
+    def get_player_input
+      puts "Please enter your coordinates in the format of x, y"
+      gets.split(",").map(&:to_i)
+    end
+
+    # @param [Array<Integer>] coordinates The array of only row and col index
+    # @return [Boolean] Return true if coordinates is valid otherwise false
+    def valid_coordinates?(coordinates)
+      if (coordinates.is_a?(Array) && coordinates.length == 2)
+        true
+      else
+        puts "Please re-enter you coordinates in a valid format"
+        false
+      end
+    end
 end

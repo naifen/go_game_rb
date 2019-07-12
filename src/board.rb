@@ -33,7 +33,7 @@ class Board
   # @param [Symbol] piece The piece to be added either :B or :W
   # @return [Boolean] return true if piece added, false if piece not added
   def add_piece(coordinates, piece)
-    if can_add_to?(coordinates, piece)
+    if can_add_to?(coordinates)
       @board[coordinates[0]][coordinates[1]] = piece
       true
     else
@@ -48,13 +48,4 @@ class Board
     # within_valid_coordinates?(coordinates) && is_coordinates_available?(coordinates)
     true
   end
-
 end
-
-b = Board.new
-b.render
-b.add_piece([3, 6], :B)
-b.add_piece([5, 6], :W)
-b.render
-puts b.board[3][6].class
-puts b.board[6][6].class
