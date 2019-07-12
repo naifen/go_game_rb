@@ -8,18 +8,20 @@ class Board
     @board = Array.new(size) { Array.new(size) }
   end
 
-  # TODO: render correctly for index is 2 digits
   # print the board with colum indicator on top and row indicator to the left
   # if a cell is nil, print "+" char, othewise print the Symbol :B or :W
   def render
     puts
+
     # 1st line col num
     @board.each_with_index do |row, i|
-      i == 0 ? print("  #{i} ") : print("#{i} ")
+      i == 0 ? print("   #{i} ") : i > 9 ? print("#{i}") : print("#{i} ")
     end
+
     puts
+
     @board.each_with_index do |row, i|
-      print "#{i} " # row num
+      i < 10 ? print("#{i}  ") : print("#{i} ")# row index
       row.each do |cell|
         cell.nil? ? print("+") : print(cell.to_s)
         print(" ")
