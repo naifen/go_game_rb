@@ -12,6 +12,6 @@ class GameTest < Test::Unit::TestCase
     game.send(:switch_players)
     # black piece player go 1st, after 1st switch current player is white piece
     assert_equal player_w, game.instance_variable_get(:@current_player),
-                 "Expect default board row count to be"
+                 "Expect switch current player to the other player"
   end
 end

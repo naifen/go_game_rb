@@ -43,16 +43,44 @@ class Board
       false
     end
   end
+  # TODO: implement to revert one turn
 
   # @param [Array<Integer>] coordinates The coordinates to add piece on board
   # @return [Boolean] return true if a piece can be added to the given coordinates
   # on board, otherwise return false
   def can_add_to?(coordinates)
-    # within_valid_coordinates?(coordinates) && is_coordinates_available?(coordinates)
-    true
+    valid_coordinates?(coordinates) && coordinates_available?(coordinates)
   end
 
+  # TODO: implement find winner
   def winner_is?(piece)
     false
   end
+
+  private
+
+    # @param [Array<Integer>] coordinates The coordinates to add piece on board
+    # @return [Boolean] Return true if given coordinates exists on board, return
+    # false otherwise
+    def valid_coordinates?(coordinates)
+      if (0..@board.length - 1).include?(coordinates[0]) &&
+         (0..@board.length - 1).include?(coordinates[1])
+        true
+      else
+        puts "Coordinates must within the range of the board."
+        false
+      end
+    end
+
+    # @param [Array<Integer>] coordinates The coordinates to add piece on board
+    # @return [Boolean] Return true if given coordinates is still available on
+    # board, return false otherwise
+    def coordinates_available?(coordinates)
+      if @board[coordinates[0]][coordinates[1]].nil?
+        true
+      else
+        puts "This spot is already taken, please try another one."
+        false
+      end
+    end
 end

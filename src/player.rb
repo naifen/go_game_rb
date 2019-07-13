@@ -32,7 +32,7 @@ class Player
     # @return [Array<Integer>] An array of 2 integers representing coordinates
     # element at index 0 represents row, element at index 1 represents col
     def get_player_input
-      puts "Please enter your coordinates in the format of x, y"
+      puts "Please enter your coordinates in the format and order of (row, colum):"
       gets.split(",").map(&:to_i)
     end
 
