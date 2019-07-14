@@ -1,8 +1,21 @@
+# typed: true
+
+require 'sorbet-runtime'
+
 class Game
+  extend T::Sig
+
   # Initialize the game with a board and two players, black piece go first
   # @param [Board] board An instance of Board class
   # @param [Player] @player_b The instances of Player class with black piece
   # @param [Player] @player_w The instances of Player class with white piece
+  sig do
+    params(
+      board: Board,
+      player_b: Player,
+      player_w: Player
+    ).void
+  end
   def initialize(board, player_b, player_w)
     @board = board
     @player_b = player_b
@@ -23,11 +36,13 @@ class Game
 
   private
 
+    sig { returns(T::Boolean) }
     def game_over?
       won_game? #|| draw_game? # not sure how does GO game draw
     end
 
     # @return [Boolean] Return true if a winner presents, otherwise false
+    sig { returns(T::Boolean) }
     def won_game?
       # check if a player's piece, either :W or :B, fulfills winning condition
       if @board.winner_is?(@current_player.piece)
