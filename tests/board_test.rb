@@ -1,3 +1,4 @@
+# typed: false
 require 'test/unit'
 require_relative "../src/board"
 
