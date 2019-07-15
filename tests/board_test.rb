@@ -118,4 +118,74 @@ class BoardTest < Test::Unit::TestCase
                  "Expect coordinates_available? to return true if a given coordinates is empty"
 
   end
+
+  def test_create_marked_board
+    marked_board = @b.send(:create_marked_board, @b.board.length)
+
+    assert_equal @b.board.length, marked_board.length,
+                 "Expect marked board has same rows as given size"
+    assert_equal @b.board.length, marked_board[0].length,
+                 "Expect marked board has same columns as given size"
+    marked_board.each do |row|
+      row.each do |cell|
+        assert_equal false, cell, "Expect all cells initially set to false"
+      end
+    end
+  end
+
+  def test_has_chi_single_piece
+    row = col = @b.board.length / 2
+
+    @b.add_piece([row, col], :W)
+    assert_equal true, @b.has_chi?(row, col, :W),
+                 "Expect has_chi? to return true if a piece is on its own"
+
+    @b.add_piece([row - 1, col], :B) # up
+    @b.add_piece([row, col + 1], :B) # right
+    @b.add_piece([row + 1, col], :B) # down
+    assert_equal true, @b.has_chi?(row, col, :W),
+                 "Expect has_chi? to return true if a piece is NOT fully surrounded"
+
+    @b.add_piece([row, col - 1], :B) # down
+    assert_equal false, @b.has_chi?(row, col, :W),
+                 "Expect has_chi? to return false if a piece is fully surrounded"
+  end
+
+  def test_has_chi_block_pieces
+    row = col = @b.board.length / 2
+
+    # create white piece block
+    @b.add_piece([row, col], :W)
+    @b.add_piece([row - 1, col], :W)
+    @b.add_piece([row, col + 1], :W)
+    @b.add_piece([row - 1, col + 1], :W)
+
+    # add black pieces around it but not close the block
+    # looks like this:
+         # 0 1 2 3 4 5 6 7 8 9
+      # 0  + + + + + + + + + +
+      # 1  + + + + + + + + + +
+      # 2  + + + + + + + + + +
+      # 3  + + + + + B B + + +
+      # 4  + + + + B W W B + +
+      # 5  + + + + B W W B + +
+      # 6  + + + + + + B + + +
+      # 7  + + + + + + + + + +
+      # 8  + + + + + + + + + +
+      # 9  + + + + + + + + + +
+    @b.add_piece([row, col - 1], :B)
+    @b.add_piece([row - 1, col - 1], :B)
+    @b.add_piece([row - 2, col], :B)
+    @b.add_piece([row - 2, col + 1], :B)
+    @b.add_piece([row - 1, col + 2], :B)
+    @b.add_piece([row, col + 2], :B)
+    @b.add_piece([row + 1, col + 1], :B)
+    assert_equal true, @b.has_chi?(row, col, :W),
+                "Expect has_chi? to return true if a piece block is NOT fully surrounded"
+
+    # close the white pieces
+    @b.add_piece([row + 1, col], :B)
+    assert_equal false, @b.has_chi?(row, col, :W),
+                 "Expect has_chi? to return false if a piece block is fully surrounded"
+  end
 end

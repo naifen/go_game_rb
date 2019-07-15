@@ -3,6 +3,8 @@
 require 'sorbet-runtime'
 
 class Board
+  extend T::Sig
+
   attr_reader :board
 
   # @param [Integer] size The size of the square board
@@ -11,6 +13,8 @@ class Board
   sig { params(size: Integer).void }
   def initialize(size: 10)
     @board = Array.new(size) { Array.new(size) }
+    @marked_locations = create_marked_board(size)
+    @eat_count = 0
   end
 
   # print the board with colum indicator on top and row indicator to the left
@@ -54,15 +58,8 @@ class Board
       false
     end
   end
-  # TODO: implement to revert one turn
-
-  # @param [Array<Integer>] coordinates The coordinates to add piece on board
-  # @return [Boolean] return true if a piece can be added to the given coordinates
-  # on board, otherwise return false
-  sig { params(coordinates: T::Array[Integer]).returns(T::Boolean) }
-  def can_add_to?(coordinates)
-    valid_coordinates?(coordinates) && coordinates_available?(coordinates)
-  end
+  # TODO: implement revert last added piece
+  # def revert_last_add; end
 
   # TODO: implement find winner
   sig { params(piece: Symbol).returns(T::Boolean) }
@@ -70,7 +67,62 @@ class Board
     false
   end
 
+  # How to check for CHI after a player placed a piece:
+  # 1, check if this piece casuing self lose piece -> invalid placement if ture
+  # 2, check if this piece casuing opponent lose piece(piece is eaten)
+  # How to check if a piece can be eaten:
+  # 1, check its adjecent [left, up, right, down] locations has chi?
+  # 2, if no chi(surround by other type, or board), eat it
+  # 3, if any of the direction has a same color piece, recursively check chi.
+
+  # @param [Integer] row_index The index of row of the location to check
+  # @param [Integer] col_index The index of column of the location to check
+  # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+  # @return [Boolean] Return true if CHI is found, otherwise false
+  sig do
+    params(
+      row_index: Integer,
+      col_index: Integer,
+      piece: Symbol
+    ).returns(T::Boolean)
+  end
+  def has_chi?(row_index, col_index, piece)
+    return true if @board[row_index][col_index].nil? # found chi, exit recursion
+    return false if @board[row_index][col_index] != piece # NO chi
+
+    @eat_count += 1
+    @marked_locations[row_index][col_index] = true # mark every checked location
+
+    if    row_index > 0 &&
+          !@marked_locations[row_index - 1][col_index] &&
+          has_chi?(row_index - 1, col_index, piece)
+      true
+    elsif row_index < (@board.length - 1) &&
+          !@marked_locations[row_index + 1][col_index] &&
+          has_chi?(row_index + 1, col_index, piece)
+      true
+    elsif col_index > 0 &&
+          !@marked_locations[row_index][col_index - 1] &&
+          has_chi?(row_index, col_index - 1, piece)
+      true
+    elsif col_index < (@board.length - 1) &&
+          !@marked_locations[row_index][col_index + 1] &&
+          has_chi?(row_index, col_index + 1, piece)
+      true
+    else
+      false
+    end
+  end
+
   private
+
+    # @param [Array<Integer>] coordinates The coordinates to add piece on board
+    # @return [Boolean] return true if a piece can be added to the given coordinates
+    # on board, otherwise return false
+    sig { params(coordinates: T::Array[Integer]).returns(T::Boolean) }
+    def can_add_to?(coordinates)
+      valid_coordinates?(coordinates) && coordinates_available?(coordinates)
+    end
 
     # @param [Array<Integer>] coordinates The coordinates to add piece on board
     # @return [Boolean] Return true if given coordinates exists on board, return
@@ -97,5 +149,12 @@ class Board
         puts "This spot is already taken, please try another one."
         false
       end
+    end
+
+    # @return [Array<Array[Boolean]> Return a 2d array of booleans, the same size
+    # as @board. Use it to mark checked locations on the board
+    sig { params(size: Integer).returns(T::Array[T::Array[T::Boolean]]) }
+    def create_marked_board(size)
+      Array.new(size) { Array.new(size, false) }
     end
 end
