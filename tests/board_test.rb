@@ -137,17 +137,17 @@ class BoardTest < Test::Unit::TestCase
     row = col = @b.board.length / 2
 
     @b.add_piece([row, col], :W)
-    assert_equal true, @b.has_chi?(row, col, :W),
+    assert_equal true, @b.send(:has_chi?, row, col, :W),
                  "Expect has_chi? to return true if a piece is on its own"
 
     @b.add_piece([row - 1, col], :B) # up
     @b.add_piece([row, col + 1], :B) # right
     @b.add_piece([row + 1, col], :B) # down
-    assert_equal true, @b.has_chi?(row, col, :W),
+    assert_equal true, @b.send(:has_chi?, row, col, :W),
                  "Expect has_chi? to return true if a piece is NOT fully surrounded"
 
     @b.add_piece([row, col - 1], :B) # down
-    assert_equal false, @b.has_chi?(row, col, :W),
+    assert_equal false, @b.send(:has_chi?, row, col, :W),
                  "Expect has_chi? to return false if a piece is fully surrounded"
   end
 
@@ -180,12 +180,12 @@ class BoardTest < Test::Unit::TestCase
     @b.add_piece([row - 1, col + 2], :B)
     @b.add_piece([row, col + 2], :B)
     @b.add_piece([row + 1, col + 1], :B)
-    assert_equal true, @b.has_chi?(row, col, :W),
+    assert_equal true, @b.send(:has_chi?, row, col, :W),
                 "Expect has_chi? to return true if a piece block is NOT fully surrounded"
 
     # close the white pieces
     @b.add_piece([row + 1, col], :B)
-    assert_equal false, @b.has_chi?(row, col, :W),
+    assert_equal false, @b.send(:has_chi?, row, col, :W),
                  "Expect has_chi? to return false if a piece block is fully surrounded"
   end
 
@@ -201,7 +201,7 @@ class BoardTest < Test::Unit::TestCase
     @b.add_piece([row - 2, col + 1], :W)
     @b.add_piece([row - 2, col + 1], :W)
 
-    @b.eat_piece(row, col, :W)
+    @b.send(:eat_piece, row, col, :W)
 
     @b.board.each do |row|
       row.each do |cell|
