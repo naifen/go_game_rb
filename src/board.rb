@@ -89,7 +89,7 @@ class Board
         piece: Symbol
       ).returns(T::Boolean)
     end
-    def has_chi?(row_index, col_index, piece)
+    def has_chi_at?(row_index, col_index, piece)
       return true if @board[row_index][col_index].nil? # found chi, exit recursion
       return false if @board[row_index][col_index] != piece # NO chi
 
@@ -98,23 +98,53 @@ class Board
 
       if    row_index > 0 &&
             !@marked_locations[row_index - 1][col_index] &&
-            has_chi?(row_index - 1, col_index, piece)
+            has_chi_at?(row_index - 1, col_index, piece)
         true
       elsif row_index < (@board.length - 1) &&
             !@marked_locations[row_index + 1][col_index] &&
-            has_chi?(row_index + 1, col_index, piece)
+            has_chi_at?(row_index + 1, col_index, piece)
         true
       elsif col_index > 0 &&
             !@marked_locations[row_index][col_index - 1] &&
-            has_chi?(row_index, col_index - 1, piece)
+            has_chi_at?(row_index, col_index - 1, piece)
         true
       elsif col_index < (@board.length - 1) &&
             !@marked_locations[row_index][col_index + 1] &&
-            has_chi?(row_index, col_index + 1, piece)
+            has_chi_at?(row_index, col_index + 1, piece)
         true
       else
         false
       end
+    end
+
+    # Check the entire board and determine if all piece of given color have chi,
+    # pass in an array as argument torecord the location where no chi is found
+    # Array in ruby is passed into method as reference so mutation to array in a
+    # method will mutate the original array
+    # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+    # @parmm [Array<Integer>] no_chi_loc The location where given piece has no chi
+    # @return [Boolean] Retrun whether all piece of given color have chi
+    sig do
+      params(
+        piece: Symbol,
+        no_chi_loc: T::Array[Integer],
+      ).returns(T::Boolean)
+    end
+    def all_have_chi?(piece, no_chi_loc = [0, 0]) # array passed in as ref in ruby
+      @board.each_with_index do |row, i|
+        row.each_with_index do |cell, j|
+          next if @board[i][j] != piece || @marked_locations[i][j]
+          @eat_count = 0
+
+          unless has_chi_at?(i, j, piece)
+            no_chi_loc[0] = i
+            no_chi_loc[1] = j
+            return false
+          end
+        end
+      end
+
+      true
     end
 
     # Eat the piece at give coordinates, and its connected piece with SAME color
