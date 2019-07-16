@@ -9,8 +9,6 @@ class PlayerTest < Test::Unit::TestCase
     player_w = Player.new("White", :W, board)
     assert_equal true, player_w.send(:valid_coordinates?, [1, 2]),
                  "Expect return true with a valid coordinates"
-    assert_equal false, player_w.send(:valid_coordinates?, "1, 2"),
-                "Expect return false if the coordinates is not an Array"
     assert_equal false, player_w.send(:valid_coordinates?, [1, 2, 3]),
                 "Expect return false if the coordinates' length is NOT 2"
     assert_equal false, player_w.send(:valid_coordinates?, [1]),

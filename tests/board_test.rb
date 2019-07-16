@@ -188,4 +188,26 @@ class BoardTest < Test::Unit::TestCase
     assert_equal false, @b.has_chi?(row, col, :W),
                  "Expect has_chi? to return false if a piece block is fully surrounded"
   end
+
+  def test_eat_piece
+    row = col = @b.board.length / 2
+
+    # create a block of only white pieces
+    @b.add_piece([row, col], :W)
+    @b.add_piece([row, col + 1], :W)
+    @b.add_piece([row - 1, col], :W)
+    @b.add_piece([row - 1, col + 1], :W)
+    @b.add_piece([row - 2, col], :W)
+    @b.add_piece([row - 2, col + 1], :W)
+    @b.add_piece([row - 2, col + 1], :W)
+
+    @b.eat_piece(row, col, :W)
+
+    @b.board.each do |row|
+      row.each do |cell|
+        assert_equal true, cell != :W,
+                    "Expect white pieces are eaten after eat_piece is invoked."
+      end
+    end
+  end
 end

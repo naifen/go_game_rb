@@ -55,6 +55,7 @@ class Player
     # @return [Boolean] Return true if coordinates is valid otherwise false
     sig { params(coordinates: T::Array[Integer]).returns(T::Boolean) }
     def valid_coordinates?(coordinates)
+      # with sorbet typechecking first condition check is NOT necessary
       if (coordinates.is_a?(Array) && coordinates.length == 2)
         true
       else
