@@ -114,6 +114,28 @@ class Board
     end
   end
 
+  # Eat the piece at give coordinates, and its connected piece with SAME color
+  # @param [Integer] row_index The index of row of the first piece to eat
+  # @param [Integer] col_index The index of column of the first piece to eat
+  # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+  sig do
+    params(
+      row_index: Integer,
+      col_index: Integer,
+      piece: Symbol
+    ).void
+  end
+  def eat_piece(row_index, col_index, piece)
+    return if @board[row_index][col_index] != piece # found the other color, exit
+
+    @board[row_index][col_index] = nil
+
+    eat_piece(row_index - 1, col_index, piece) if row_index > 0
+    eat_piece(row_index + 1, col_index, piece) if row_index < @board.length - 1
+    eat_piece(row_index, col_index - 1, piece) if col_index > 0
+    eat_piece(row_index, col_index + 1, piece) if col_index < @board.length - 1
+  end
+
   private
 
     # @param [Array<Integer>] coordinates The coordinates to add piece on board
