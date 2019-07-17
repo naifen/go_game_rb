@@ -74,47 +74,8 @@ class Board
   # 1, check its adjecent [left, up, right, down] locations has chi?
   # 2, if no chi(surround by other type, or board), eat it
   # 3, if any of the direction has a same color piece, recursively check chi.
+  # FIXME: does NOT always correctly eat a block of piece
 
-  # @param [Integer] row_index The index of row of the location to check
-  # @param [Integer] col_index The index of column of the location to check
-  # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
-  # @return [Boolean] Return true if CHI is found, otherwise false
-  sig do
-    params(
-      row_index: Integer,
-      col_index: Integer,
-      piece: Symbol
-    ).returns(T::Boolean)
-  end
-  def has_chi?(row_index, col_index, piece)
-    return true if @board[row_index][col_index].nil? # found chi, exit recursion
-    return false if @board[row_index][col_index] != piece # NO chi
-
-    @eat_count += 1
-    @marked_locations[row_index][col_index] = true # mark every checked location
-
-    if    row_index > 0 &&
-          !@marked_locations[row_index - 1][col_index] &&
-          has_chi?(row_index - 1, col_index, piece)
-      true
-    elsif row_index < (@board.length - 1) &&
-          !@marked_locations[row_index + 1][col_index] &&
-          has_chi?(row_index + 1, col_index, piece)
-      true
-    elsif col_index > 0 &&
-          !@marked_locations[row_index][col_index - 1] &&
-          has_chi?(row_index, col_index - 1, piece)
-      true
-    elsif col_index < (@board.length - 1) &&
-          !@marked_locations[row_index][col_index + 1] &&
-          has_chi?(row_index, col_index + 1, piece)
-      true
-    else
-      false
-    end
-  end
-
-  # Eat the piece at give coordinates, and its connected piece with SAME color
   # @param [Integer] row_index The index of row of the first piece to eat
   # @param [Integer] col_index The index of column of the first piece to eat
   # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
@@ -123,20 +84,133 @@ class Board
       row_index: Integer,
       col_index: Integer,
       piece: Symbol
-    ).void
+    ).returns(Integer)
   end
-  def eat_piece(row_index, col_index, piece)
-    return if @board[row_index][col_index] != piece # found the other color, exit
+  def update_board_and_eat_count(row_index, col_index, piece)
+    result = 0
 
-    @board[row_index][col_index] = nil
+    @marked_locations = create_marked_board(@board.length)
+    self_has_chi = has_chi_at?(row_index, col_index, piece)
+    @eat_count = 0
+    location = [-1000, -1000] # array is passed by reference, which will be modified by other function call
+    other_piece = (piece == :W ? :B : :W)
+    @marked_locations = create_marked_board(@board.length)
+    # check placement of i, j casue other color lost its chi
+    # update the location to where otherColor has no Chi
+    other_have_chi = all_have_chi?(other_piece, location)
 
-    eat_piece(row_index - 1, col_index, piece) if row_index > 0
-    eat_piece(row_index + 1, col_index, piece) if row_index < @board.length - 1
-    eat_piece(row_index, col_index - 1, piece) if col_index > 0
-    eat_piece(row_index, col_index + 1, piece) if col_index < @board.length - 1
+    if !self_has_chi && other_have_chi
+      @board[row_index][col_index] = nil
+      puts "Suicide not allowed!" # TODO: does not switch user for this
+      return 0
+    end
+
+    # start to recursively eat piece from location where otherColor has no Chi
+    if !other_have_chi
+      eat_piece(location[0], location[1], other_piece)
+
+      if other_piece == 1
+        result = @eat_count
+      else
+        result -= @eat_count
+      end
+    end
+
+    result
   end
 
   private
+
+    # @param [Integer] row_index The index of row of the location to check
+    # @param [Integer] col_index The index of column of the location to check
+    # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+    # @return [Boolean] Return true if CHI is found, otherwise false
+    sig do
+      params(
+        row_index: Integer,
+        col_index: Integer,
+        piece: Symbol
+      ).returns(T::Boolean)
+    end
+    def has_chi_at?(row_index, col_index, piece)
+      return true if @board[row_index][col_index].nil? # found chi, exit recursion
+      return false if @board[row_index][col_index] != piece # NO chi
+
+      @eat_count += 1
+      @marked_locations[row_index][col_index] = true # mark every checked location
+
+      if    row_index > 0 &&
+            !@marked_locations[row_index - 1][col_index] &&
+            has_chi_at?(row_index - 1, col_index, piece)
+        true
+      elsif row_index < (@board.length - 1) &&
+            !@marked_locations[row_index + 1][col_index] &&
+            has_chi_at?(row_index + 1, col_index, piece)
+        true
+      elsif col_index > 0 &&
+            !@marked_locations[row_index][col_index - 1] &&
+            has_chi_at?(row_index, col_index - 1, piece)
+        true
+      elsif col_index < (@board.length - 1) &&
+            !@marked_locations[row_index][col_index + 1] &&
+            has_chi_at?(row_index, col_index + 1, piece)
+        true
+      else
+        false
+      end
+    end
+
+    # Check the entire board and determine if all piece of given color have chi,
+    # pass in an array as argument torecord the location where no chi is found
+    # Array in ruby is passed into method as reference so mutation to array in a
+    # method will mutate the original array
+    # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+    # @parmm [Array<Integer>] no_chi_loc The location where given piece has no chi
+    # @return [Boolean] Retrun whether all piece of given color have chi
+    sig do
+      params(
+        piece: Symbol,
+        no_chi_loc: T::Array[Integer],
+      ).returns(T::Boolean)
+    end
+    def all_have_chi?(piece, no_chi_loc = [0, 0]) # array passed in as ref in ruby
+      @board.each_with_index do |row, i|
+        row.each_with_index do |cell, j|
+          next if @board[i][j] != piece || @marked_locations[i][j]
+          @eat_count = 0
+
+          unless has_chi_at?(i, j, piece)
+            no_chi_loc[0] = i
+            no_chi_loc[1] = j
+            return false
+          end
+        end
+      end
+
+      true
+    end
+
+    # Eat the piece at give coordinates, and its connected piece with SAME color
+    # @param [Integer] row_index The index of row of the first piece to eat
+    # @param [Integer] col_index The index of column of the first piece to eat
+    # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+    sig do
+      params(
+        row_index: Integer,
+        col_index: Integer,
+        piece: Symbol
+      ).void
+    end
+    def eat_piece(row_index, col_index, piece)
+      return if @board[row_index][col_index] != piece # found the other color, exit
+
+      @board[row_index][col_index] = nil
+
+      eat_piece(row_index - 1, col_index, piece) if row_index > 0
+      eat_piece(row_index + 1, col_index, piece) if row_index < @board.length - 1
+      eat_piece(row_index, col_index - 1, piece) if col_index > 0
+      eat_piece(row_index, col_index + 1, piece) if col_index < @board.length - 1
+    end
 
     # @param [Array<Integer>] coordinates The coordinates to add piece on board
     # @return [Boolean] return true if a piece can be added to the given coordinates
