@@ -87,7 +87,7 @@ class BoardTest < Test::Unit::TestCase
                  "Expect to return true if a piece is added"
 
     is_taken = @b.add_piece([@b.board.length / 2, @b.board.length / 2], :W)
-    assert_equal true, is_added,
+    assert_equal false, is_taken,
                  "Expect a piece can NOT be added if a coordinate is NOT empty"
 
     is_not_added = @b.add_piece([@b.board.length * 10, @b.board.length * 10], :W)
@@ -327,7 +327,7 @@ class BoardTest < Test::Unit::TestCase
                  "Expect has_chi? to return false if a piece block is fully surrounded"
   end
 
-  def test_all_have_chi # TODO: something wrong with checked board
+  def test_all_have_chi
     row = col = @b.board.length / 2
 
     # tests pass for these
@@ -346,7 +346,7 @@ class BoardTest < Test::Unit::TestCase
     # @b.add_piece([9, 1], :W)
     # @b.add_piece([8, 1], :W)
 
-    # TODO: find BUG NOT pass if uncomment 9, 9
+    # FIXME: find BUG NOT pass if uncomment 9, 9
     # @b.add_piece([9, 9], :W)
     # @b.add_piece([9, 8], :W)
     # @b.add_piece([8, 9], :W)
@@ -377,10 +377,13 @@ class BoardTest < Test::Unit::TestCase
     @b.add_piece([row - 1, col + 2], :B)
     @b.add_piece([row, col + 2], :B)
     @b.add_piece([row + 1, col], :B)
-    # @b.add_piece([row + 1, col + 1], :B) # TODO: cause fail find bug
+    # FIXME: cause test fail if add :B piece to this coordinates, find bug
+    # @b.add_piece([row + 1, col + 1], :B)
 
     no_chi_loc = [0, 0]
     assert_equal true, @b.send(:all_have_chi?, :W, no_chi_loc),
                 "Expect has_chi? to return true if a piece block is NOT fully surrounded"
   end
+
+  # TODO: test_update_board
 end

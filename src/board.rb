@@ -74,7 +74,50 @@ class Board
   # 1, check its adjecent [left, up, right, down] locations has chi?
   # 2, if no chi(surround by other type, or board), eat it
   # 3, if any of the direction has a same color piece, recursively check chi.
-  # TODO: def update_board
+  # FIXME: does NOT always correctly eat a block of piece
+
+  # @param [Integer] row_index The index of row of the first piece to eat
+  # @param [Integer] col_index The index of column of the first piece to eat
+  # @param [Symbol] piece The symbol :W or :B representing piece(white or black)
+  sig do
+    params(
+      row_index: Integer,
+      col_index: Integer,
+      piece: Symbol
+    ).returns(Integer)
+  end
+  def update_board_and_eat_count(row_index, col_index, piece)
+    result = 0
+
+    @marked_locations = create_marked_board(@board.length)
+    self_has_chi = has_chi_at?(row_index, col_index, piece)
+    @eat_count = 0
+    location = [-1000, -1000] # array is passed by reference, which will be modified by other function call
+    other_piece = (piece == :W ? :B : :W)
+    @marked_locations = create_marked_board(@board.length)
+    # check placement of i, j casue other color lost its chi
+    # update the location to where otherColor has no Chi
+    other_have_chi = all_have_chi?(other_piece, location)
+
+    if !self_has_chi && other_have_chi
+      @board[row_index][col_index] = nil
+      puts "Suicide not allowed!" # TODO: does not switch user for this
+      return 0
+    end
+
+    # start to recursively eat piece from location where otherColor has no Chi
+    if !other_have_chi
+      eat_piece(location[0], location[1], other_piece)
+
+      if other_piece == 1
+        result = @eat_count
+      else
+        result -= @eat_count
+      end
+    end
+
+    result
+  end
 
   private
 

@@ -35,6 +35,7 @@ class Player
 
       if valid_coordinates?(coordinates)
         if @board.add_piece(coordinates, @piece)
+          @board.update_board_and_eat_count(coordinates[0], coordinates[1], @piece)
           break
         end
       end
